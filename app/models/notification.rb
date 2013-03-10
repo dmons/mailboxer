@@ -5,7 +5,11 @@ class Notification < ActiveRecord::Base
   belongs_to :sender, :polymorphic => :true
   belongs_to :notified_object, :polymorphic => :true
   validates_presence_of :subject, :body
-  has_many :receipts, :dependent => :destroy
+  has_many :receipts, :dependent => :destroy do 
+    def without(user)
+       proxy_association.owner.receipts.where("receipts.receiver_id != ? AND receipts.receiver_type = ?", user.id, user.class.name)
+    end
+  end
 
   scope :recipient, lambda { |recipient|
     joins(:receipts).where('receipts.receiver_id' => recipient.id,'receipts.receiver_type' => recipient.class.to_s)
@@ -81,10 +85,11 @@ class Notification < ActiveRecord::Base
   end
 
   #Returns the recipients of the Notification
-  def recipients
+  def recipients(exclude_user=false)
     if @recipients.blank?
       recipients_array = Array.new
-      self.receipts.each do |receipt|
+      receipts = exclude_user ? self.receipts.without(exclude_user) : self.receipts
+      receipts.each do |receipt|
         recipients_array << receipt.receiver
       end
     return recipients_array

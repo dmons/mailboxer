@@ -2,8 +2,12 @@ class Conversation < ActiveRecord::Base
   attr_accessible :subject
 
 	has_many :messages, :dependent => :destroy
-	has_many :receipts, :through => :messages
-
+	has_many :receipts, :through => :messages do 
+		def without(user)
+			 proxy_association.owner.receipts.where("receipts.receiver_id != ? AND receipts.receiver_type = ?", user.id, user.class.name)
+		end
+	end
+	
 	validates_presence_of :subject
 
 	before_validation :clean
@@ -52,9 +56,10 @@ class Conversation < ActiveRecord::Base
 	end
 
   #Returns an array of participants
-	def recipients
+	def recipients(options=[])
+		exclude_user=options[:exclude_user]
 		if self.last_message
-			recps = self.last_message.recipients
+			recps = exclude_user ? self.last_message.recipients(exclude_user): self.last_message.recipients
 			recps = recps.is_a?(Array) ? recps : [recps]
 		return recps
 		end
