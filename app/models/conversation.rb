@@ -27,6 +27,9 @@ class Conversation < ActiveRecord::Base
   scope :trash, lambda {|participant|
     participant(participant).merge(Receipt.trash)
   }
+  scope :not_trash, lambda {|participant|
+    participant(participant).merge(Receipt.not_trash)
+  }
   scope :unread,  lambda {|participant|
     participant(participant).merge(Receipt.is_unread)
   }

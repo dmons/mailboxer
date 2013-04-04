@@ -39,6 +39,8 @@ class Mailbox
         conv = Conversation.sentbox(@messageable)
       when 'trash'
         conv = Conversation.trash(@messageable)
+      when 'not_trash'
+        conv = Conversation.not_trash(@messageable)
       end
     end
 
@@ -72,6 +74,14 @@ class Mailbox
     options = options.merge(:mailbox_type => 'trash')
     return self.conversations(options)
   end
+
+  #Returns all conversations not in the trash of messageable
+  
+  def not_trash(options={})
+    options = options.merge(:mailbox_type => 'not_trash')
+    return self.conversations(options)
+  end
+
 
   #Returns all the receipts of messageable, from Messages and Notifications
   def receipts(options = {})
